@@ -1,0 +1,52 @@
+// Stworzenie VTEPa
+ip l add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
+// Konfiguracja overlayowego IPka
+ip a add 172.25.165.1/24 dev vxlan0
+// Podniesienie interfejsu
+ip l set up dev vxlan0
+
+Problem: adresacja L2. Normalnie dostajemy MAKi za pomocą ARPa. Jak zrobić to w tym przypadku?
+
+// Uzupełnienie tablic ARPa sąsiadów, tak aby intrfejs potrafił zaadresować ramkę
+// lladdr to adres MAC wirtualnego interfejsu po drugiej stronie
+ip n add 172.25.165.2 lladdr 00:01:02:03:04:05 dev vxlan0
+
+==============================  Metoda z multicastem
+Przy tworzeniu VTEPa za pomocą ip link podajemy argument group <ip multicast>.
+W ten sposób możemy rozesłać zapytanie ARP do wszystkich hostów w naszym VNI(wszystkie powinny być w tej samej grupie multicastowej).
+
+==============================  Metoda z floodingiem - wysyłanie do wszystkich końcówek tunelu
+// Dla każdej underlayowej końcówki dajemy taki wpis
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst <underlayowy IP>
+
+==============================  Metoda ze statycznymi wpisami - powiązanie MACów z IPkami underlaya
+bridge fdb append <konkretny MAC> dev vxlan0 dst <underlayowy IP>
+
+==============================  Metoda z dynamicznym uzupełnianiem wpisów
+Na hostach działa jakiś demon, który komunikuje się z jakąś bazą danych.
+Na podstawie danych zawartych w bazie uzupełnianie są wpisy w tablicach FDB/ARP.
+
+----------------------------- Żenienie VXLANów z przestrzenami nazw
+Usuwamy overlayowe IP z interfejsu vxlan0.
+
+// Tworzenie namespace. Zamiast tego możemy zrobić konterner z wyziolowanym namespacem.
+ip netns add vxlan
+// Stworzenie pary veth
+ip l add veth0 type veth peer veth1 netns vxlan
+// Trzeba ustawić OVERLAYOWEGO ipka dla veth1 wewnątrz namespace vxlan. To jest nasz kontener dokerowy.
+// W defaultowm namespace nie ustawiamy IPka dla veth0 - analogia jest taka, że interfejs ten symuluje kabelek.
+// Jakby miał IPka, to byłby połączony ze stosem IP jajka, co spowodowałaoby że ramki nie przeszły by przez most(który tworzymy zaraz).
+
+// Tworzymy most, który będzie łączył veth1 i interfejs vxlanowy. Most też podnosimy UP.
+ip l add vxlan-br bridge
+ip l set master vxlan-br dev veth1
+ip l set master vxlan-br dev vxlan0
+ip l set up dev vxlan-br
+
+// Uzupełniamy statyczne wpisy FDB jak na początku
+
+// Odpalamy tcpdumpa na interfejsie FIZYCZNYM, aby sprawdzić czy wychodzą z niego pakiety VXLANowe
+tcpdump -ni eth0
+
+// Pingowanie z wewnątrz NS
+ip nents exec vxlan ping <IP>
