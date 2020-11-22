@@ -144,6 +144,24 @@ Czy adresy Overlayowe się zgadzają?
 
 Zadanie polega na analogicznym skonfigurowaniu drugiego hosta, pamiętaj tym razem o poprawnym ustawieniu adresów MAC na obu hostach.
 
+## Po uzyskaniu łączności IP
+Aby zasymulować działanie usług warstw wyższych możemy zacząć nasłuchiwanie netcatem:
+```sh
+ip netns exec vxlan nc -vvlt -p 9999 -e /bin/bash
+```
+
+Po drugiej stronie:
+
+```sh
+ip netns exec vxlan nc -vvt <adres drugiego komputera> 9999
+```
+
+Powinniśmy otrzymać shell na drugim komputerze:
+![](img/3.png)
+
+Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
+![](img/4.png)
+
 # Authors
 
 - Mirosław Błażej
