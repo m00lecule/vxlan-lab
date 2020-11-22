@@ -157,10 +157,10 @@ ip netns exec vxlan nc -vvt <adres drugiego komputera> 9999
 ```
 
 Powinniśmy otrzymać shell na drugim komputerze:
-![](img/3.png)
+![](3.png)
 
 Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
-![](img/4.png)
+![](4.png)
 
 # Authors
 
