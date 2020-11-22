@@ -1,6 +1,6 @@
 # VXLAN - labolatorium wprowadzające
 
-Celem zadania jest zasymulowanie sieci L2, tak aby zapewnić wrażenie bycia w jednej sieci usługom, które są fizycznie 
+<!-- Celem zadania jest zasymulowanie sieci L2, tak aby zapewnić wrażenie bycia w jednej sieci usługom, które są fizycznie 
 oddzielone urządzeniem L3 - routerem.
 
 Problemy do rozwiązania:
@@ -11,12 +11,10 @@ Problemy do rozwiązania:
 Dodać definicję:
 - overlay i underlay
 
-[typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)
+[typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/) -->
 
 
-
-
-## Przygotowanie Topologii
+## Przygotowanie topologii
 
 W pierwszym kroku musimy przygotować następującą topologię:
 
@@ -37,13 +35,12 @@ ip l set up dev vxlan0
 
 ## Konfiguracja VXLAN
 
-Dodajemy interfejs o nazwie vxlan0, o vni 88 który potrafi używa port udp 4789 do przesyłania opakowanych ramek w nagłówki vxlanowe
+Dodajemy interfejs o nazwie `vxlan0`, o vni `88` który używa port udp `4789` do przesyłania opakowanych ramek w nagłówki vxlanowe
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
 ```
 
-## Tworzymy namespace, który ma symulować odizolowane środowisko (kopia konteneru).
-
+## Tworzymy namespace
 
 ```sh
 # wykonanie polecenia przy izolacji sieciowej z NS
@@ -55,7 +52,7 @@ ip netns add vxlan
 
 **Zadanie** Sprawdź interfejsy sieciowe w utworzonym ns.
 
-Tworzymy interfejs VETH (opis dodać) połączenia namespace'a z domyślnym namespacem:
+Tworzymy interfejs VETH **(opis dodać)** połączenia namespace'a z domyślnym namespacem:
 
 ```sh
 ip l add veth0 type veth peer veth1 netns vxlan
@@ -101,7 +98,7 @@ Czy host dostał odpowiedź na pinga?
 _(Dostaliśmy odpowiedź ARP, natomiast ICMP timeoutuje)_
 
 ```sh
-root@kali:/home/kali# tcpdump -ni vxlan0
+root@kali:/home/kali tcpdump -ni vxlan0
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on vxlan0, link-type EN10MB (Ethernet), capture size 262144 bytes
 13:05:24.785640 ARP, Request who-has 172.25.165.2 
