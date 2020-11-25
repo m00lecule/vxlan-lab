@@ -13,6 +13,7 @@ Dodać definicję:
 
 [typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/) -->
 
+# Przykład
 
 ## Przygotowanie topologii
 
@@ -161,6 +162,39 @@ Powinniśmy otrzymać shell na drugim komputerze:
 
 Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
 ![](4.png)
+
+# Problem
+
+## Zadanie 1
+Przypminij do routera kolejny komputer, ale tym razem podczas konfiguracji VXLANU nie twórz własnego namespacu, tylko spróbuj wykorzystać do tego dockera z jakąś usługą.
+
+![](5.png)
+
+Aby uruchomić kontener bez żadnego networkingu(zostanie stworzony pusty namespace):
+```
+docker run --rm -dit \
+  --network none \
+  --name <nazwa_konternera> \
+  <nazwa_obrazu> \
+  /bin/bash
+```
+
+Komenda `ip netns ls` nie pokaże żadnej nowej przestrzeni nazw, ponieważ brakuje symbolicznych linków.
+Aby utworzyć je ręcznie:
+- Znajdź PID procesu: `docker inspect <id kontenera> | grep -i PID `
+- ln -sfT /proc/<znaleziony_pid>/ns/net /var/run/netns/<nazwa-po-jakej-chcemy-zwracać-się-do-namespace>
+- Jeśli katalog /var/run/netns nie istnieje, stwórz go.
+
+Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usługi w nim uruchomionej, tak aby korzystała ze stworzonego interfejsu.
+
+## Zadanie 2
+
+Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
+Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
+
+Spróbuj naprawić ten problem korzystając z komendy `bridge fdb append` w taki sposób aby VTEP wiedział pod którym IP underlayowym znajduje się drugi VTEP o wskazanym adresie MAC.
+
+Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
 
 # Authors
 
