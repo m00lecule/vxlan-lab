@@ -195,12 +195,15 @@ Spróbuj naprawić ten problem korzystając z komendy `bridge fdb append` w taki
 
 Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
 
+W jaki sposób można poprawić skalowalność tego rozwiązania?
+
 ## Zadanie 3
 Wyczyść stworzoną overlayową konfigurację, na przykład poprzez zrestartowanie wirtualnych maszyn.
 Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
 
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
 Dla uproszczenia można zignorować tworzenie namespaców.
+
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
 
