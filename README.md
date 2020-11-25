@@ -182,7 +182,7 @@ docker run --rm -dit \
 Komenda `ip netns ls` nie pokaże żadnej nowej przestrzeni nazw, ponieważ brakuje symbolicznych linków.
 Aby utworzyć je ręcznie:
 - Znajdź PID procesu: `docker inspect <id kontenera> | grep -i PID `
-- ln -sfT /proc/<znaleziony_pid>/ns/net /var/run/netns/<nazwa-po-jakej-chcemy-zwracać-się-do-namespace>
+- Stwórz symboliczny link: `ln -sfT /proc/<znaleziony_pid>/ns/net /var/run/netns/<nazwa-po-jakej-chcemy-zwracać-się-do-namespace>`
 - Jeśli katalog /var/run/netns nie istnieje, stwórz go.
 
 Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usługi w nim uruchomionej, tak aby korzystała ze stworzonego interfejsu.
