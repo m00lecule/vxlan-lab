@@ -202,8 +202,7 @@ Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
 Dla uproszczenia można zignorować tworzenie namespaców.
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
-Jaka jest główna wada multicastu, która uniemożliwia stosowanie go w wielu przypadkach?
-
+Dlaczego nie możemy zastosować tej metody w Internecie?
 
 # Authors
 
