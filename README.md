@@ -188,13 +188,22 @@ Aby utworzyć je ręcznie:
 Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usługi w nim uruchomionej, tak aby korzystała ze stworzonego interfejsu.
 
 ## Zadanie 2
-
 Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
 Spróbuj naprawić ten problem korzystając z komendy `bridge fdb append` w taki sposób aby VTEP wiedział pod którym IP underlayowym znajduje się drugi VTEP o wskazanym adresie MAC.
 
 Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
+
+## Zadanie 3
+Wyczyść stworzoną overlayową konfigurację, na przykład poprzez zrestartowanie wirtualnych maszyn.
+Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
+
+Spróbuj skonfigurować VXLAN używając metody z multicastem. 
+Dla uproszczenia można zignorować tworzenie namespaców.
+Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
+Jaka jest główna wada multicastu, która uniemożliwia stosowanie go w wielu przypadkach?
+
 
 # Authors
 
