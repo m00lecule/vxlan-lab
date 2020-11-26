@@ -1,4 +1,4 @@
-# VXLAN - labolatorium wprowadzające
+# VXLAN - laboratorium wprowadzające
 
 VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on zasymulowanie sieci na poziomie L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
@@ -26,7 +26,7 @@ Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem i
 
 ## Problematyka
 
-Elementy infrastruktury VxLANowej muszą zapewnić transparencje lokalizacji hostów w sieci underlayowej. Co za tym idzie w przypadku próby ustalenia adresu MAC hosta, znajdującego się innym segmencie sieci adres MAC hosta powinien być poprawnie zwrócony. Wyspecjalizowane jednostki sieci underlay odpowiadają za zbieranie oraz wymianę zawartości tabel MAC hostów należących do underlay network. W nich znajduje się świadomość całej wirtualizowanej sieci.
+Elementy infrastruktury VxLANowej muszą zapewnić transparencje lokalizacji hostów w sieci underlayowej. Co za tym idzie w przypadku próby ustalenia adresu MAC hosta, znajdującego się innym segmencie sieci adres MAC hosta powinien być poprawnie zwrócony. Elementy cześci underlay muszą implementować mechanizmy umożliwiające zbieranie informacji o hostach w wirtualizowanej sieci 
 
 ## Elementy infrastruktury VxLAN
 
@@ -189,17 +189,17 @@ ip netns exec vxlan nc -vvt <adres drugiego komputera> 9999
 ```
 
 Powinniśmy otrzymać shell na drugim komputerze:
-![](3.png)
+![](img/3.png)
 
 Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
-![](4.png)
+![](img/4.png)
 
 # Problem
 
 ## Zadanie 1
 Przypminij do routera kolejny komputer, ale tym razem podczas konfiguracji VXLANU nie twórz własnego namespacu, tylko spróbuj wykorzystać do tego dockera z jakąś usługą.
 
-![](5.png)
+![](img/5.png)
 
 Aby uruchomić kontener bez żadnego networkingu(zostanie stworzony pusty namespace):
 ```
