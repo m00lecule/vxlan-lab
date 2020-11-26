@@ -1,17 +1,48 @@
 # VXLAN - labolatorium wprowadzające
 
-<!-- Celem zadania jest zasymulowanie sieci L2, tak aby zapewnić wrażenie bycia w jednej sieci usługom, które są fizycznie 
-oddzielone urządzeniem L3 - routerem.
+VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on zasymulowanie sieci na poziomie L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
-Problemy do rozwiązania:
+## Zasada działania
+
+![](img/ramka.png)
+*przykład ramki, która zostałą już zenkapsulowana przez nagłówek VXLANowy*
+
+Upraszczając działanie, VXLAN jest protokołem, który tuneluje Ethernet. Opakowuje ramkę ethernet w datagram UDP z kilkoma dodatkowymi nagłówkami, wymaganymi do poprawnego tunelowania. W skład tych nagłówków wchodzą:
+
+- **8 bitów** zarezerwowane na potrzeby przyszłych zastosowań, wszystkie wyzerowane
+- **24 bity** VNI (VXLAN Network ID) 
+- **24 bity** zarezerwowane na potrzeby przyszłych zastosowań, 
+- **8 bitów** flagi ustawionych na 0 z wyjątkiem bitu trzeciego, który jest ustawiony na binarne 1 i oznacza poprawny nagłówek VxLAN
+
+Dowiedzmy się teraz co kryje się za terminologią wykorzystywaną w VxLANach.
+## VNI (VxLAN Network Identifier)
+
+Tag identyfikujący segment sieci, do którego przynależy dana usługa. Semantycznie ma analogiczne znaczenie co VLAN ID, do którego przynależy ramka. 
+W przypadku VLANów na tag poświęcone jest 12 bitów, co daje nam możliwość ponumerowania 4095 VLANów (4096 możliwości, ale VLAN 0 jest wyłączony z użytku). Natomiast na tag VNI zostały przeznaczone aż 24 bity co pozwala nam na zaadresowanie aż 16 777 215 segmentów sieci.
+
+## Overlay/Underlay
+
+Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem ich funkcjonalności w systemie. Elementy należące do **sieci underlay** mają za zadanie m.in.: zapewnić komunikację czy zbierać adresy MAC. Elementy zapewniają transparencję w komunikacji usługom należącym do sieci wirtualizowanej. Elementy komunikujące się poprzez wirtualizowaną sieć nalezą do **sieci overlay**.
+
+## Problematyka
+
+Elementy infrastruktury VxLANowej muszą zapewnić transparencje lokalizacji hostów w sieci underlayowej. Co za tym idzie w przypadku próby ustalenia adresu MAC hosta, znajdującego się innym segmencie sieci adres MAC hosta powinien być poprawnie zwrócony. Wyspecjalizowane jednostki sieci underlay odpowiadają za zbieranie oraz wymianę zawartości tabel MAC hostów należących do underlay network. W nich znajduje się świadomość całej wirtualizowanej sieci.
+
+## Elementy infrastruktury VxLAN
+
+Tutaj o tych VTEP i innych rzeczach - na co i po co to komu?
+
+
+## Tablice FWB (prosze to poprawic)
+
+opisać sposoby zbierania MAC
+
+<!-- Problemy do rozwiązania:
 - nie można zrobić arpa
 - gdzie są adresy MAC trzymane (consul, etcd)
 
 
-Dodać definicję:
-- overlay i underlay
-
-[typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/) -->
+[typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)  -->
 
 # Przykład
 
