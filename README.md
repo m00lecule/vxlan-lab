@@ -35,9 +35,8 @@ Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem i
 **Sieć underlay** zapewnienia komunikację na poziome warstwy trzeciej pomiędzy hostami posiadającymi VTEPy. Najczęściej jest to sieć fizyczna.
 **Sieć overlay** to sieć wirtualizowana, która używa do transmisji sieci underlay. Umożliwia współdziałanie wielu usług w jednym segmencie L2, gdzie w rzeczywistości różne usługi mogą być rozproszone np. na serwerach od dwóch różnych dostawców. 
 
-## Problemy
+## Problem - Przesyłanie ruchu BUM(Broadcast, Unknown Unicast, Multicast)
 
-### Przesyłanie ruchu BUM(Broadcast, Unknown Unicast, Multicast)
 Po konfiguracji VTEPu nie wie on pod jakim adresem underlayowym znajdują się pozostałe VTEPy.
 Skutkuje to odcięciem od segmentu sieci L2.
 
