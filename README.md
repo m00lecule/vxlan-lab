@@ -465,7 +465,9 @@ Po postawieniu interfejsu możemy zauważych ruch IGMP.
 
 Co się dzieje przy próbie spingowania innego VTEPu na linku pomiędzy hostem pingującym a routerem i na linku pomiędzy routerem a hostem pingowanym?
 
-Router nie przekazuje multicastowych pakietów, musimy go skonfigurować.
+![](img/10.png)
+
+Router nie routuje multicastowych pakietów, musimy go skonfigurować.
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
