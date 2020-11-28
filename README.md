@@ -1,6 +1,6 @@
 # VXLAN - laboratorium wprowadzające
 
-VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on zasymulowanie sieci na poziomie L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
+VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on stworzenie wirtualnego segmentu sieci L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
 ## Interfejsy sieciowe
 ### Interfejs fizyczny vs logiczny
@@ -145,31 +145,36 @@ Dowiedzmy się teraz co kryje się za terminologią wykorzystywaną w VxLANach.
 Tag identyfikujący segment sieci, do którego przynależy dana usługa. Semantycznie ma analogiczne znaczenie co VLAN ID, do którego przynależy ramka. 
 W przypadku VLANów na tag poświęcone jest 12 bitów, co daje nam możliwość ponumerowania 4095 VLANów (4096 możliwości, ale VLAN 0 jest wyłączony z użytku). Natomiast na tag VNI zostały przeznaczone aż 24 bity co pozwala nam na zaadresowanie aż 16 777 215 segmentów sieci.
 
+## VTEP (VXLAN tunnel endpoint)
+
+Wirtualny interfejs odpowiedzialny za enkapsulacje ramek w nagłówki VxLANowe.
+Przy tworzeniu VTEPu w Linuxie mamy możliwość ustawienia wielu opcji.
+Postaramy się wyjaśnić używane opcje, natomiast resztę można znaleźć w [ip-link(8)](https://man7.org/linux/man-pages/man8/ip-link.8.html).
+
+W implementacji Linuxowej jeden VTEP może działać tylko w jednym VNI.
+Jeśli chcemy wykorzystać większą liczbę VNIów po prostu tworzymy kolejne interfejsy.
+
 ## Overlay/Underlay
 
-Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem ich funkcjonalności w systemie. Elementy należące do **sieci underlay** mają za zadanie m.in.: zapewnić komunikację czy zbierać adresy MAC. Elementy zapewniają transparencję w komunikacji usługom należącym do sieci wirtualizowanej. Elementy komunikujące się poprzez wirtualizowaną sieć nalezą do **sieci overlay**.
+Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem ich funkcjonalności w systemie. 
+**Sieć underlay** zapewnienia komunikację na poziome warstwy trzeciej pomiędzy hostami posiadającymi VTEPy. Najczęściej jest to sieć fizyczna.
+**Sieć overlay** to sieć wirtualizowana, która używa do transmisji sieci underlay. Umożliwia współdziałanie wielu usług w jednym segmencie L2, gdzie w rzeczywistości różne usługi mogą być rozproszone np. na serwerach od dwóch różnych dostawców. 
 
-## Problematyka
+## Problem - Przesyłanie ruchu BUM(Broadcast, Unknown Unicast, Multicast)
 
-Elementy infrastruktury VxLANowej muszą zapewnić transparencje lokalizacji hostów w sieci underlayowej. Co za tym idzie w przypadku próby ustalenia adresu MAC hosta, znajdującego się innym segmencie sieci adres MAC hosta powinien być poprawnie zwrócony. Elementy cześci underlay muszą implementować mechanizmy umożliwiające zbieranie informacji o hostach w wirtualizowanej sieci 
+Po konfiguracji VTEPu nie wie on pod jakim adresem underlayowym znajdują się pozostałe VTEPy.
+Skutkuje to odcięciem od segmentu sieci L2.
 
-## Elementy infrastruktury VxLAN
+Jak rozwiązać ten problem?
 
-Tutaj o tych VTEP i innych rzeczach - na co i po co to komu?
-
-
-## Tablice FWB (prosze to poprawic)
-
-opisać sposoby zbierania MAC
-
-<!-- Problemy do rozwiązania:
-- nie można zrobić arpa
-- gdzie są adresy MAC trzymane (consul, etcd)
+- **Użycie Multicastu** - VTEP po włączeniu wykorzysta IGMP do dołączenia do grupy multicastowej. Jeśli sieć underlayowa wspiera multicast to problem jest rozwiązany z automatu.
+- **Statyczne ustalenie VTEPów** - rozwiązanie mało skalowalne, ale umożliwia użycie underlaya który nie wspiera multicastu.
+- **Dynamicnze uzupełnianie statycznych wpisów** - używamy deamona, który będzie w stanie pobrać informacje z zewnętrznej bazy danych i automatycznie uzupełnić informacje o pozostałych VTEPach. Do ustalenia pozycji pozostałych VTEPów można również użyć technologii BGP EVPN.
 
 
 [typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)  -->
 
-# Przykład
+# Przykład 1
 
 ## Przygotowanie topologii
 
@@ -192,7 +197,10 @@ ip l set up dev vxlan0
 
 ## Konfiguracja VXLAN
 
-Dodajemy interfejs o nazwie `vxlan0`, o vni `88` który używa port udp `4789` do przesyłania opakowanych ramek w nagłówki vxlanowe
+Dodajemy interfejs o nazwie `vxlan0`, o vni `88` który używa port udp `4789` do przesyłania opakowanych ramek w nagłówki vxlanowe.
+Opcja `proxy` powoduje, że VTEP odpowiada na ARPy używając własnej tablicy ARP - nie przekazuje zapytań dalej.
+Opcja `nolearning` wyłącza source-address learning, który pozwala na skojarzenie overlayowego adresu MAC z underlayowym adresem IP.
+Powyższe opcje wymuszą na nas konfigurację wielu rzeczy ręcznie, ale pozwolą na lepsze zrozumienie tego co się dzieje.
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
 ```
@@ -319,9 +327,30 @@ Powinniśmy otrzymać shell na drugim komputerze:
 Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
 ![](img/4.png)
 
-# Problem
+**W tym momencie zrób problem 1**
 
-## Zadanie 1
+# Przykład 2
+Jak zrobić aby nie trzeba było ręcznie wpisywać MACów, tylko żeby całość przebiegała automatycznie?
+
+Tworzymy VTEP używając następujących opcji:
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy nolearning
+```
+Jedyną różnicą jest opcja `noproxy` - teraz VTEP będzie przekazywał ramki ARPowe dalej, zamiast samemu na nie odpowiadać.
+
+Teraz dla każdej końcówki tunelu uzupełniamy wpisy za pomocą `bridge fdb`:
+```sh
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst <underlayowy IP>
+```
+
+Uruchamiamy Wiresharka na którymś z linków, a następnie pingujemy z komputera jakiś adres z sieci overlayowej.
+
+![](img/6.png)
+![](img/7.png)
+
+**W tym momencie zrób problem 2 i 3**
+
+# Problem 1
 Przypminij do routera kolejny komputer, ale tym razem podczas konfiguracji VXLANU nie twórz własnego namespacu, tylko spróbuj wykorzystać do tego dockera z jakąś usługą.
 
 ![](img/5.png)
@@ -343,22 +372,86 @@ Aby utworzyć je ręcznie:
 
 Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usługi w nim uruchomionej, tak aby korzystała ze stworzonego interfejsu.
 
-## Zadanie 2
+# Problem 2
 Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
-Spróbuj naprawić ten problem korzystając z komendy `bridge fdb append` w taki sposób aby VTEP wiedział pod którym IP underlayowym znajduje się drugi VTEP o wskazanym adresie MAC.
+Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu VTEPa. Sprawdź jak zmienia się zawartość tablic fdb na hostach(polecenie `bridge fdb show dev <nazwa interfejsu>`):
+- Przed rozpoczęciem jakiejkolwiek komunikacji - _powinny być tylko wpisy 00:00:00:00:00:00_
+- Po spingowaniu drugiego hosta z pierwszego hosta
+- Po spingowaniu pierwszego hosta z drugiego hosta
 
-Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
+**Uwaga**
+Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `sysctl -w net.ipv6.conf.all.disable_ipv6 = 1`.
+Na potrzeby tego zadania należy również wyłączyć wszystkie usługi, które mogą próbować automatycznie wysłać coś po włączeniu interfejsu.
+Przykładem takiej usługi może być *avahi-deamon*.
 
-W jaki sposób można poprawić skalowalność tego rozwiązania?
+Konfiguracja na hoście 1 (_1.1.1.2_):
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.1/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
+```
 
-## Zadanie 3
-Wyczyść stworzoną overlayową konfigurację, na przykład poprzez zrestartowanie wirtualnych maszyn.
-Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
+Konfiguracja na hoście 2 (_2.2.2.2_):
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.2/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
+```
 
+Konfiguracja na hoście 3 (_3.3.3.2_):
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.3/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
+```
+
+**Oczekiwane wpisy przed rozpoczęciem komunikacji:**
+```
+Host 1:
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+Host 2:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+Host 3:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+```
+
+**Po spingowaniu hosta 2 przez 1:**
+```
+Host 1:
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+42:26:25:8c:36:3b dst 2.2.2.2 self            <- MAC hosta 2
+Host 2:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+4e:00:84:8e:77:8a dst 1.1.1.2 self            <- MAC hosta 1
+Host 3:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+```
+
+Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. 
+Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
+Mimo, że w teorii mogłoby powiązać overlayowy adres MAC *4e:00:84:8e:77:8a* z underlayowym IP *1.1.1.2*.
+![](img/8.png)
+
+**Po spingowaniu hosta 1 przez 2:**
+Sytuacja bez zmian.
+
+# Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
-Dla uproszczenia można zignorować tworzenie namespaców.
+Przy tworzeniu VTEPa użwyj opcji `group <adres grupy MC>`.
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
