@@ -452,7 +452,7 @@ Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośr
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
 
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 group 239.1.1.1 dev eth0
+ip l add vxlan0 type vxlan id 88 dstport 4789 group 224.4.4.4 dev eth0
 ip a add 172.25.165.1/24 dev vxlan0
 ip l set up vxlan0
 ```
@@ -467,7 +467,29 @@ Co się dzieje przy próbie spingowania innego VTEPu na linku pomiędzy hostem p
 
 ![](img/10.png)
 
-Router nie routuje multicastowych pakietów, musimy go skonfigurować.
+Router nie routuje multicastowych pakietów, musimy go skonfigurować:
+```sh
+ip multicast-routing 
+
+interface serial0 
+ip address <address> <mask>
+ip pim sparse-dense-mode 
+
+interface ethernet0 
+ip address <address> <mask>
+ip pim sparse-dense-mode
+```
+
+Czy teraz zachodzi komunikacja?
+Nie? 
+Zajrzyj w pole TTL - systemy Linuxowe wysyłają pakiety broadcastowe/multicastowe z wartością jeden. Pakiet jest dropiony na routerze. 
+
+Aby to naprawić możemy użyć regułki iptables:
+```sh
+iptables -t mangle -A OUTPUT -d 224.4.4.4 -j TTL --ttl-set 128
+```
+
+Sprawdź czy teraz komunikacja zadziała.
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
