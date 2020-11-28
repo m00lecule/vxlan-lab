@@ -252,9 +252,9 @@ Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się d
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
 Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu VTEPa. Sprawdź jak zmienia się zawartość tablic fdb na hostach(polecenie `bridge fdb show dev <nazwa interfejsu>`):
-- Przed rozpoczęciem jakiejkolwiek komunikacji _powinny być tylko wpisy 00:00:00:00:00:00_
-- Po spingowaniu drugiego hosta z pierwszego hosta - _wszystkie trzy hosty powinny znać MACa pierwszego hosta(bo ARP)_
-- Po spingowaniu pierwszego hosta z drugiego hosta - _tutaj nie zachodzi ARP, trzeci host nie powinien dostać wpisu o drugim hoście_
+- Przed rozpoczęciem jakiejkolwiek komunikacji - _powinny być tylko wpisy 00:00:00:00:00:00_
+- Po spingowaniu drugiego hosta z pierwszego hosta
+- Po spingowaniu pierwszego hosta z drugiego hosta
 
 **Uwaga**
 Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `sysctl -w net.ipv6.conf.all.disable_ipv6 = 1`.
@@ -303,7 +303,21 @@ Host 3:
 
 Po spingowaniu hosta 2 przez 1:
 ```
+Host 1:
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+42:26:25:8c:36:3b dst 2.2.2.2 self            <- MAC hosta 2
+Host 2:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+4e:00:84:8e:77:8a dst 1.1.1.2 self            <- MAC hosta 1
+Host 3:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
 ```
+
+Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
+
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
