@@ -2,57 +2,36 @@
 
 VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on stworzenie wirtualnego segmentu sieci L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
-## Interfejsy sieciowe
-### Interfejs fizyczny vs logiczny
+## Interfejsy sieciowe w Linuxie
 
-**interfejs fizyczny** - urządzenie wejścia/wyjścia zamontowane na danym elemencie hardware'u. Jest jednym z końców połączenia dwóch urządzeń sieciowych. Posiada adres sprzętowy, w~przypadku Ethernetu jest to adres MAC.
+Linux udostępnia wiele różnych interfejsów sieciowych:
+- Fizyczne (*ethX*, *ensXX*, *wlanX*, itp.) - reprezentują fizyczny interfejs urządzenia, rozmawiają bezpośrednio ze sterownikami urządzeń.
+- Wirtualne - realizują pewną funkcjonalność, ale nie korzystają bezpośrednio ze sprzętu. Do tej grupy zaliczamy mosty, pary veth, interfejsty tun/tap, itd.
 
-**interfejs logiczny** - tworzony na poziomie software'owym, ma przypisany adres IP oraz inne atrybuty, jak dostępna lista portów czy ustawienia firewalla. Może być związany z konkretnym interfejsem fizycznym, ponadto dla jednego interfejsu fizycznego można zadeklarować wiele interfejsów logicznych.
+Wraz z rozwojem wirutalizacji wzrosło znaczenie interfejsów wirtualnych. 
+W tym laboratorium będziemy symulować topologię, która jest zwykle tworzona przez Dockera(najczęściej stosowane narzędzie do konteneryzacji).
+Będzie ona wykorzystywała bridge, parę veth oraz interfejs VTEP(o którym później).
 
-Na systemach UNIXowych lista interfejsów jest dostępna w katalogu `/sys/class/net/`.
-
-**Uwaga:** Wszystkie podane w tej sekcji komendy wymagają posiadania uprawnień administratora.
-
-Konfiguracja interfejsu logicznego w systemach UNIXowych jest możliwa za pomocą polecenia `ifconfig`:
-```
-ifconfig nazwa_interfejsu_fizycznego[:numer_interfejsu_logicznego] adres_IP netmask maska
-```
-
-Przykład:
-```
-ifconfig wlp3s0:12 192.168.120.93 netmask 255.255.255.0
-```
-
-Usunąć interfejs logiczny można w następujący sposób:
-```
-ifconfig nazwa_interfejsu_fizycznego:nazwa_interfejsu_logicznego down
-```
-
-Przykład:
-```
-ifconfig wlp3s0:12 down
-```
-
-### Bridge
+### Most (Bridge)
 
 System Linux udostępnia wiele możliwości tworzenia wirtualnych sieci działających w ramach jednej maszyny. Jednym z udostępnionych mechanizmów jest **bridge**, którego działanie zbliżone jest do fizycznego switch - przekazuje pakiety pomiędzy przyłączonymi do niego interfejsami. Może być wykorzystany do połączenia ze sobą maszyn wirtualnych. Wspiera protokół STP oraz stosowanie list dostępu do VLAN-ów.
 
 Przykładowo: na komputerze mamy dostępne 3 wirtualne środowiska, które chcemy połączyć ze sobą oraz z zewnętrzną siecią (dostępną na interfejsie eth0). Tworzymy bridge oraz dołączmy do niego urządzenia za pomocą następujących komend:
 
 ```
-ip link add br0 type bridge
-ip link set br0 up
+ip l add br0 type bridge
+ip l set br0 up
 
-ip link set eth0 master br0
+ip l set eth0 master br0
 
-ip link set tap1 up
-ip link set tap1 master br0
+ip l set tap1 up
+ip l set tap1 master br0
 
-ip link set tap2 up
-ip link set tap2 master br0
+ip l set tap2 up
+ip l set tap2 master br0
 
-ip link set veth1 up
-ip link set veth1 master br0
+ip l set veth1 up
+ip l set veth1 master br0
 ```
 
 W rezultacie otrzymujemy połączenie przedstawione na poniższym schemacie:
@@ -63,28 +42,28 @@ W rezultacie otrzymujemy połączenie przedstawione na poniższym schemacie:
 
 Do odłączenia interfejsów od bridge'a służy polecenie:
 ```
-ip link set nazwa_interfejsu nomaster
+ip l set nazwa_interfejsu nomaster
 ```
 
 Bridge usuwany jest z systemu za pomocą polecenia:
 ```
-ip link delete nazwa_bridge'a type bridge
+ip l del nazwa_bridge'a
 ```
 
-### VEth
+### VEth (Virtual Ethernet)
 
 VEth jest wirtualnym łączem Ethernet, tworzy się odpowiednie pary wirtualnych urządzeń stanowiące końce połączenia. Pakiety, które zostały wysłane przez jeden z końców automatycznie przychodza na drugi z nich.
 
 Łącze VEth tworzy się za pomocą komendy:
 ```
-ip link add nazwa1 type veth peer name nazwa2
+ip l add nazwa1 type veth peer name nazwa2
 ```
 
 Inną możliwością, jest utworzenie przestrzeni nazw do których przypisane zostaną odpowiednie końce połączenia, wymaga to modyfikacji komend:
 ```
 ip netns add przestrzen1
 ip netns add przestrzen2
-ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
+ip l add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
 ```
 
 **Uwaga:** przy zadeklarowaniu przestrzeni nazw i przypisaniu do niej interfejsu aby wykonać polecenia w tej przestrzeni należy komendy poprzedzić (przedstawione w przykładzie dalej):
@@ -106,19 +85,19 @@ ip netns add przestrzen2
 
 ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
 
-ip netns exec przestrzen1 ip link set dev veth1 up
-ip netns exec przestrzen2 ip link set dev veth2 up
+ip netns exec przestrzen1 ip l set dev veth1 up
+ip netns exec przestrzen2 ip l set dev veth2 up
 
-ip netns exec przestrzen1 ip addr add 10.0.0.1/24 dev veth1
-ip netns exec przestrzen2 ip addr add 10.0.0.2/24 dev veth2
+ip netns exec przestrzen1 ip a add 10.0.0.1/24 dev veth1
+ip netns exec przestrzen2 ip a add 10.0.0.2/24 dev veth2
 
 ip netns exec przestrzen1 ping -I veth1 10.0.0.2
 ip netns exec przestrzen2 ping -I veth2 10.0.0.1
 ```
 
-Interfejsy VEth można usuwać za pomocą `ip link delete` (wystarczy usunąć tylko jeden koniec, drugi zostanie usunięty automatycznie, dla przestrzeni nazw trzeba komendę oczywiście poprzedzić `ip netns exec nazwa_przestrzeni`):
+Interfejsy VEth można usuwać za pomocą `ip l delete` (wystarczy usunąć tylko jeden koniec, drugi zostanie usunięty automatycznie, dla przestrzeni nazw trzeba komendę oczywiście poprzedzić `ip netns exec nazwa_przestrzeni`):
 ```
-ip link delete veth1
+ip l delete veth1
 ```
 
 Przestrzeń nazw usuwamy analogicznie, używając `ip netns delete`:
@@ -497,10 +476,10 @@ Dlaczego nie możemy zastosować tej metody w Internecie?
 
 # Źródła
 
-- https://www.cs.put.poznan.pl/mlibuda/konf_Linux.pdf
 - https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/
 - https://wiki.archlinux.org/index.php/Network_bridge
 - https://man7.org/linux/man-pages/man4/veth.4.html
+- https://www.cisco.com/c/en/us/support/docs/ip/ip-multicast/9356-48.html
 
 # Authors
 
