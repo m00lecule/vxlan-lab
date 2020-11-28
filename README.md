@@ -322,7 +322,7 @@ Mimo, że w teorii mogłoby powiązać overlayowy adres MAC *4e:00:84:8e:77:8a* 
 ![](img/8.png)
 
 **Po spingowaniu hosta 1 przez 2:**
-Sytacja bez zmian.
+Sytuacja bez zmian.
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
