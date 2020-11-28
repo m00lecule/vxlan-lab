@@ -223,6 +223,8 @@ Uruchamiamy Wiresharka na którymś z linków, a następnie pingujemy z komputer
 ![](img/6.png)
 ![](img/7.png)
 
+**W tym momencie zrób problem 2**
+
 # Problem 1
 Przypminij do routera kolejny komputer, ale tym razem podczas konfiguracji VXLANU nie twórz własnego namespacu, tylko spróbuj wykorzystać do tego dockera z jakąś usługą.
 
