@@ -35,6 +35,44 @@ ifconfig wlp3s0:12 down
 
 ### Bridge
 
+System Linux udostępnia wiele możliwości tworzenia wirtualnych sieci działających w ramach jednej maszyny. Jednym z udostępnionych mechanizmów jest **bridge**, którego działanie zbliżone jest do fizycznego switch - przekazuje pakiety pomiędzy przyłączonymi do niego interfejsami. Może być wykorzystany do połączenia ze sobą maszyn wirtualnych. Wspiera protokół STP oraz stosowanie list dostępu do VLAN-ów.
+
+Przykładowo: na komputerze mamy dostępne 3 wirtualne środowiska, które chcemy połączyć ze sobą oraz z zewnętrzną siecią (dostępną na interfejsie eth0). Tworzymy bridge oraz dołączmy do niego urządzenia za pomocą następujących komend:
+
+```
+ip link add br0 type bridge
+ip link set br0 up
+
+ip link set eth0 master br0
+
+ip link set tap1 up
+ip link set tap1 master br0
+
+ip link set tap2 up
+ip link set tap2 master br0
+
+ip link set veth1 up
+ip link set veth1 master br0
+```
+
+W rezultacie otrzymujemy połączenie przedstawione na poniższym schemacie:
+
+![](img/bridge.png)
+
+*źródło grafiki: https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/*
+
+Do odłączenia interfejsów od bridge'a służy polecenie:
+```
+ip link set nazwa_interfejsu nomaster
+```
+
+Bridge usuwany jest z systemu za pomocą polecenia:
+```
+ip link delete nazwa_bridge'a type bridge
+```
+
+*Opracowano na podstawie: https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/, https://wiki.archlinux.org/index.php/Network_bridge*
+
 ### VEth
 
 ## Zasada działania
