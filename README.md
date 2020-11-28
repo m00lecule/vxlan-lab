@@ -251,10 +251,59 @@ Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usług
 Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
-Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu VTEPa. Sprawdź jak zmienia się zawartość tablic fdb na hostach(polecenie `bridge fdb`):
+Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu VTEPa. Sprawdź jak zmienia się zawartość tablic fdb na hostach(polecenie `bridge fdb show dev <nazwa interfejsu>`):
 - Przed rozpoczęciem jakiejkolwiek komunikacji _powinny być tylko wpisy 00:00:00:00:00:00_
 - Po spingowaniu drugiego hosta z pierwszego hosta - _wszystkie trzy hosty powinny znać MACa pierwszego hosta(bo ARP)_
 - Po spingowaniu pierwszego hosta z drugiego hosta - _tutaj nie zachodzi ARP, trzeci host nie powinien dostać wpisu o drugim hoście_
+
+**Uwaga**
+Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `net.ipv6.conf.all.disable_ipv6 = 1`.
+Na potrzeby tego zadania należy również wyłączyć wszystkie usługi, które mogą próbować automatycznie wysłać coś po włączeniu interfejsu.
+Przykładem takiej usługi może być *avahi-deamon*.
+
+Konfiguracja na hoście 1:
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.1/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
+```
+
+Konfiguracja na hoście 2:
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.2/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
+```
+
+Konfiguracja na hoście 3:
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip a add 172.25.165.3/24 dev vxlan0
+ip l set up vxlan0
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
+```
+
+Oczekiwane wpisy przed rozpoczęciem komunikacji:
+```
+Host 1:
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+Host 2:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 3.3.3.2 self permanent
+Host 3:
+00:00:00:00:00:00 dst 1.1.1.2 self permanent
+00:00:00:00:00:00 dst 2.2.2.2 self permanent
+```
+
+Po spingowaniu hosta 2 przez 1:
+```
+```
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
