@@ -2,6 +2,41 @@
 
 VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on zasymulowanie sieci na poziomie L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
+## Interfejsy sieciowe
+### Interfejs fizyczny vs logiczny
+
+**interfejs fizyczny** - urządzenie wejścia/wyjścia zamontowane na danym elemencie hardware'u. Jest jednym z końców połączenia dwóch urządzeń sieciowych. Posiada adres sprzętowy, w~przypadku Ethernetu jest to adres MAC.
+
+**interfejs logiczny** - tworzony na poziomie software'owym, ma przypisany adres IP oraz inne atrybuty, jak dostępna lista portów czy ustawienia firewalla. Może być związany z konkretnym interfejsem fizycznym, ponadto dla jednego interfejsu fizycznego można zadeklarować wiele interfejsów logicznych.
+
+Na systemach UNIXowych lista interfejsów jest dostępna w katalogu `/sys/class/net/`.
+
+Konfiguracja interfejsu logicznego w systemach UNIXowych jest możliwa za pomocą polecenia `ifconfig`:
+```
+ifconfig nazwa_interfejsu_fizycznego[:numer_interfejsu_logicznego] adres_IP netmask maska
+```
+
+Przykład:
+```
+ifconfig wlp3s0:12 192.168.120.93 netmask 255.255.255.0
+```
+
+Usunąć interfejs logiczny można w następujący sposób:
+```
+ifconfig nazwa_interfejsu_fizycznego:nazwa_interfejsu_logicznego down
+```
+
+Przykład:
+```
+ifconfig wlp3s0:12 down
+```
+
+*Opracowano na podstawie: https://www.cs.put.poznan.pl/mlibuda/konf_Linux.pdf*
+
+### Bridge
+
+### VEth
+
 ## Zasada działania
 
 ![](img/ramka.png)
