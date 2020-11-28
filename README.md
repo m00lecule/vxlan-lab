@@ -141,7 +141,7 @@ Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem i
 **Sieć underlay** zapewnienia komunikację na poziome warstwy trzeciej pomiędzy hostami posiadającymi VTEPy. Najczęściej jest to sieć fizyczna.
 **Sieć overlay** to sieć wirtualizowana, która używa do transmisji sieci underlay. Umożliwia współdziałanie wielu usług w jednym segmencie L2, gdzie w rzeczywistości różne usługi mogą być rozproszone np. na serwerach od dwóch różnych dostawców. 
 
-## Problem - Przesyłanie ruchu BUM(Broadcast, Unknown Unicast, Multicast)
+## Problem - Przesyłanie ruchu BUM (Broadcast, Unknown Unicast, Multicast)
 
 Po konfiguracji VTEPu nie wie on pod jakim adresem underlayowym znajdują się pozostałe VTEPy.
 Skutkuje to odcięciem od segmentu sieci L2.
@@ -151,9 +151,6 @@ Jak rozwiązać ten problem?
 - **Użycie Multicastu** - VTEP po włączeniu wykorzysta IGMP do dołączenia do grupy multicastowej. Jeśli sieć underlayowa wspiera multicast to problem jest rozwiązany z automatu.
 - **Statyczne ustalenie VTEPów** - rozwiązanie mało skalowalne, ale umożliwia użycie underlaya który nie wspiera multicastu.
 - **Dynamicnze uzupełnianie statycznych wpisów** - używamy deamona, który będzie w stanie pobrać informacje z zewnętrznej bazy danych i automatycznie uzupełnić informacje o pozostałych VTEPach. Do ustalenia pozycji pozostałych VTEPów można również użyć technologii BGP EVPN.
-
-
-[typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)  -->
 
 # Przykład 1
 
