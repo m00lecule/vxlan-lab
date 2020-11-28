@@ -72,7 +72,10 @@ ip l set up dev vxlan0
 
 ## Konfiguracja VXLAN
 
-Dodajemy interfejs o nazwie `vxlan0`, o vni `88` który używa port udp `4789` do przesyłania opakowanych ramek w nagłówki vxlanowe
+Dodajemy interfejs o nazwie `vxlan0`, o vni `88` który używa port udp `4789` do przesyłania opakowanych ramek w nagłówki vxlanowe.
+Opcja `proxy` powoduje, że VTEP odpowiada na ARPy używając własnej tablicy ARP - nie przekazuje zapytań dalej.
+Opcja `nolearning` wyłącza source-address learning, który pozwala na skojarzenie overlayowego adresu MAC z underlayowym adresem IP.
+Powyższe opcje wymuszą na nas konfigurację wielu rzeczy ręcznie, ale pozwolą na lepsze zrozumienie tego co się dzieje.
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
 ```
