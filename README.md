@@ -1,6 +1,6 @@
 # VXLAN - laboratorium wprowadzające
 
-VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on zasymulowanie sieci na poziomie L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
+VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [RFC 7348](https://tools.ietf.org/html/rfc7348). Umożliwia on stworzenie wirtualnego segmentu sieci L2, maskując fakt przedzielenia urządzeniem L3. Pozwala on tworzyć izolowane i skalowalne sieci wirtualne bez ograniczeń, które posiada VLAN. Zasięg VLANu ograniczał się tylko do urządzeń warstwy L2 w obrębie pojedynczego segmentu sieci. VxLAN jest korzystny z punktu widzenia fizycznej infrastruktury ze względu na rozłożenie enkapsulacji na urządzenia warstwy drugiej oraz warstwy trzeciej.
 
 ## Zasada działania
 
@@ -20,18 +20,32 @@ Dowiedzmy się teraz co kryje się za terminologią wykorzystywaną w VxLANach.
 Tag identyfikujący segment sieci, do którego przynależy dana usługa. Semantycznie ma analogiczne znaczenie co VLAN ID, do którego przynależy ramka. 
 W przypadku VLANów na tag poświęcone jest 12 bitów, co daje nam możliwość ponumerowania 4095 VLANów (4096 możliwości, ale VLAN 0 jest wyłączony z użytku). Natomiast na tag VNI zostały przeznaczone aż 24 bity co pozwala nam na zaadresowanie aż 16 777 215 segmentów sieci.
 
+## VTEP (VXLAN tunnel endpoint)
+
+Wirtualny interfejs odpowiedzialny za enkapsulacje ramek w nagłówki VxLANowe.
+Przy tworzeniu VTEPu w Linuxie mamy możliwość ustawienia wielu opcji.
+Postaramy się wyjaśnić używane opcje, natomiast resztę można znaleźć w [ip-link(8)](https://man7.org/linux/man-pages/man8/ip-link.8.html).
+
+W implementacji Linuxowej jeden VTEP może działać tylko w jednym VNI.
+Jeśli chcemy wykorzystać większą liczbę VNIów po prostu tworzymy kolejne interfejsy.
+
 ## Overlay/Underlay
 
-Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem ich funkcjonalności w systemie. Elementy należące do **sieci underlay** mają za zadanie m.in.: zapewnić komunikację czy zbierać adresy MAC. Elementy zapewniają transparencję w komunikacji usługom należącym do sieci wirtualizowanej. Elementy komunikujące się poprzez wirtualizowaną sieć nalezą do **sieci overlay**.
+Przy wdrażaniu tego rozwiązania warto podzielić elementy sieciowe względem ich funkcjonalności w systemie. 
+**Sieć underlay** zapewnienia komunikację na poziome warstwy trzeciej pomiędzy hostami posiadającymi VTEPy. Najczęściej jest to sieć fizyczna.
+**Sieć overlay** to sieć wirtualizowana, która używa do transmisji sieci underlay. Umożliwia współdziałanie wielu usług w jednym segmencie L2, gdzie w rzeczywistości różne usługi mogą być rozproszone np. na serwerach od dwóch różnych dostawców. 
 
-## Problematyka
+## Problemy
 
-Elementy infrastruktury VxLANowej muszą zapewnić transparencje lokalizacji hostów w sieci underlayowej. Co za tym idzie w przypadku próby ustalenia adresu MAC hosta, znajdującego się innym segmencie sieci adres MAC hosta powinien być poprawnie zwrócony. Elementy cześci underlay muszą implementować mechanizmy umożliwiające zbieranie informacji o hostach w wirtualizowanej sieci 
+### Przesyłanie ruchu BUM(Broadcast, Unknown Unicast, Multicast)
+Po konfiguracji VTEPu nie wie on pod jakim adresem underlayowym znajdują się pozostałe VTEPy.
+Skutkuje to odcięciem od segmentu sieci L2.
 
-## Elementy infrastruktury VxLAN
+Jak rozwiązać ten problem?
 
-Tutaj o tych VTEP i innych rzeczach - na co i po co to komu?
-
+- Użycie Multicastu - VTEP po włączeniu wykorzysta IGMP do dołączenia do grupy multicastowej. Jeśli sieć underlayowa wspiera Multicast to problem jest rozwiązany z automatu.
+- Statyczne ustalenie VTEPów - rozwiązanie mało skalowalne, ale umożliwia użycie underlaya który nie wspiera multicastu.
+- Dynamicnze uzupełnianie statycznych wpisów - używamy deamona, który będzie w stanie pobrać informacje z zewnętrznej bazy danych i automatycznie uzupełnić informacje o pozostałych VTEPach. Do ustalenia pozycji pozostałych VTEPów można również użyć technologii BGP EVPN.
 
 ## Tablice FWB (prosze to poprawic)
 
