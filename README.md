@@ -10,7 +10,7 @@ Linux udostępnia wiele różnych interfejsów sieciowych:
 
 Wraz z rozwojem wirutalizacji wzrosło znaczenie interfejsów wirtualnych. 
 W tym laboratorium będziemy symulować topologię, która jest zwykle tworzona przez Dockera(najczęściej stosowane narzędzie do konteneryzacji).
-Będzie ona wykorzystywała bridge, parę veth oraz interfejs VTEP(o którym później).
+Będzie ona wykorzystywała bridge, parę veth oraz interfejs VTEP.
 
 ### Most (Bridge)
 
