@@ -382,7 +382,7 @@ Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu V
 - Po spingowaniu pierwszego hosta z drugiego hosta
 
 **Uwaga**
-Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `sysctl -w net.ipv6.conf.all.disable_ipv6 = 1`.
+Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `sysctl -w net.ipv6.conf.all.disable_ipv6=1`.
 Na potrzeby tego zadania należy również wyłączyć wszystkie usługi, które mogą próbować automatycznie wysłać coś po włączeniu interfejsu.
 Przykładem takiej usługi może być *avahi-deamon*.
 
@@ -435,19 +435,18 @@ Host 1:
 Host 2:
 00:00:00:00:00:00 dst 1.1.1.2 self permanent
 00:00:00:00:00:00 dst 3.3.3.2 self permanent
-4e:00:84:8e:77:8a dst 1.1.1.2 self            <- MAC hosta 1
+fa:ff:60:19:dc:bb dst 1.1.1.2 self            <- MAC hosta 1
 Host 3:
 00:00:00:00:00:00 dst 1.1.1.2 self permanent
 00:00:00:00:00:00 dst 2.2.2.2 self permanent
+fa:ff:60:19:dc:bb dst 1.1.1.2 self            <- MAC hosta 1
 ```
 
-Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. 
-Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
-Mimo, że w teorii mogłoby powiązać overlayowy adres MAC *4e:00:84:8e:77:8a* z underlayowym IP *1.1.1.2*.
+Host 3 otrzymał ARPa wysłanego prez Hosta 1, dlatego otrzymał wpis z jego adresem MAC.
 ![](img/8.png)
 
 **Po spingowaniu hosta 1 przez 2:**
-Sytuacja bez zmian.
+Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośrednio do Hosta1.
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
