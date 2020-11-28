@@ -42,9 +42,9 @@ Skutkuje to odcięciem od segmentu sieci L2.
 
 Jak rozwiązać ten problem?
 
-- *Użycie Multicastu* - VTEP po włączeniu wykorzysta IGMP do dołączenia do grupy multicastowej. Jeśli sieć underlayowa wspiera multicast to problem jest rozwiązany z automatu.
-- *Statyczne ustalenie VTEPów* - rozwiązanie mało skalowalne, ale umożliwia użycie underlaya który nie wspiera multicastu.
-- *Dynamicnze uzupełnianie statycznych wpisów* - używamy deamona, który będzie w stanie pobrać informacje z zewnętrznej bazy danych i automatycznie uzupełnić informacje o pozostałych VTEPach. Do ustalenia pozycji pozostałych VTEPów można również użyć technologii BGP EVPN.
+- **Użycie Multicastu** - VTEP po włączeniu wykorzysta IGMP do dołączenia do grupy multicastowej. Jeśli sieć underlayowa wspiera multicast to problem jest rozwiązany z automatu.
+- **Statyczne ustalenie VTEPów** - rozwiązanie mało skalowalne, ale umożliwia użycie underlaya który nie wspiera multicastu.
+- **Dynamicnze uzupełnianie statycznych wpisów** - używamy deamona, który będzie w stanie pobrać informacje z zewnętrznej bazy danych i automatycznie uzupełnić informacje o pozostałych VTEPach. Do ustalenia pozycji pozostałych VTEPów można również użyć technologii BGP EVPN.
 
 
 [typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)  -->
