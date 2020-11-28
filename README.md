@@ -471,13 +471,10 @@ Router nie routuje multicastowych pakietów, musimy go skonfigurować:
 ```sh
 ip multicast-routing 
 
-interface serial0 
-ip address <address> <mask>
+int fa0/0 
 ip pim sparse-dense-mode 
 
-interface ethernet0 
-ip address <address> <mask>
-ip pim sparse-dense-mode
+...
 ```
 
 Czy teraz zachodzi komunikacja?
@@ -489,7 +486,11 @@ Aby to naprawić możemy użyć regułki iptables:
 iptables -t mangle -A OUTPUT -d 224.4.4.4 -j TTL --ttl-set 128
 ```
 
-Sprawdź czy teraz komunikacja zadziała.
+Sprawdź czy teraz komunikacja zadziała. Drugi host powinien odpowiedzieć adresem unicastowym. Wniosek jest taki, że multicast używany jest tylko dla ruchu BUM.
+
+![](img/11.png)
+![](img/12.png)
+
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
