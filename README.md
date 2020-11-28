@@ -261,7 +261,7 @@ Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych
 Na potrzeby tego zadania należy również wyłączyć wszystkie usługi, które mogą próbować automatycznie wysłać coś po włączeniu interfejsu.
 Przykładem takiej usługi może być *avahi-deamon*.
 
-Konfiguracja na hoście 1:
+Konfiguracja na hoście 1 (_1.1.1.2_):
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
 ip a add 172.25.165.1/24 dev vxlan0
@@ -270,7 +270,7 @@ bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
 ```
 
-Konfiguracja na hoście 2:
+Konfiguracja na hoście 2 (_2.2.2.2_):
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
 ip a add 172.25.165.2/24 dev vxlan0
@@ -279,7 +279,7 @@ bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
 ```
 
-Konfiguracja na hoście 3:
+Konfiguracja na hoście 3 (_3.3.3.2_):
 ```sh
 ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
 ip a add 172.25.165.3/24 dev vxlan0
