@@ -49,7 +49,7 @@ Jak rozwiązać ten problem?
 
 [typy interfejsów sieciowych](https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/)  -->
 
-# Przykład
+# Przykład 1
 
 ## Przygotowanie topologii
 
@@ -202,9 +202,28 @@ Powinniśmy otrzymać shell na drugim komputerze:
 Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
 ![](img/4.png)
 
-# Problem
+**W tym momencie zrób problem 1**
 
-## Zadanie 1
+# Przykład 2
+Jak zrobić aby nie trzeba było ręcznie wpisywać MACów, tylko żeby całość przebiegała automatycznie?
+
+Tworzymy VTEP używając następujących opcji:
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy nolearning
+```
+Jedyną różnicą jest opcja `noproxy` - teraz VTEP będzie przekazywał ramki ARPowe dalej, zamiast samemu na nie odpowiadać.
+
+Teraz dla każdej końcówki tunelu uzupełniamy wpisy za pomocą `bridge fdb`:
+```sh
+bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst <underlayowy IP>
+```
+
+Uruchamiamy Wiresharka na którymś z linków, a następnie pingujemy z komputera jakiś adres z sieci overlayowej.
+
+![](img/6.png)
+![](img/7.png)
+
+# Problem 1
 Przypminij do routera kolejny komputer, ale tym razem podczas konfiguracji VXLANU nie twórz własnego namespacu, tylko spróbuj wykorzystać do tego dockera z jakąś usługą.
 
 ![](img/5.png)
@@ -226,7 +245,7 @@ Aby utworzyć je ręcznie:
 
 Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usługi w nim uruchomionej, tak aby korzystała ze stworzonego interfejsu.
 
-## Zadanie 2
+# Problem 2
 Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
@@ -236,7 +255,7 @@ Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
 
 W jaki sposób można poprawić skalowalność tego rozwiązania?
 
-## Zadanie 3
+# Problem 3
 Wyczyść stworzoną overlayową konfigurację, na przykład poprzez zrestartowanie wirtualnych maszyn.
 Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
 
