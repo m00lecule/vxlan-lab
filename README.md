@@ -317,7 +317,7 @@ Host 3:
 ```
 
 Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
-
+![](img/8.png)
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
