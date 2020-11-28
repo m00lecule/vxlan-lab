@@ -106,7 +106,7 @@ ip netns delete przestrzen1
 ip netns delete przestrzen2
 ```
 
-## Zasada działania
+# VxLAN - działanie
 
 ![](img/ramka.png)
 *przykład ramki, która zostałą już zenkapsulowana przez nagłówek VXLANowy*
@@ -132,6 +132,8 @@ Postaramy się wyjaśnić używane opcje, natomiast resztę można znaleźć w [
 
 W implementacji Linuxowej jeden VTEP może działać tylko w jednym VNI.
 Jeśli chcemy wykorzystać większą liczbę VNIów po prostu tworzymy kolejne interfejsy.
+
+![](img/vxlan.png)
 
 ## Overlay/Underlay
 
@@ -479,6 +481,7 @@ Dlaczego nie możemy zastosować tej metody w Internecie?
 - https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/
 - https://wiki.archlinux.org/index.php/Network_bridge
 - https://man7.org/linux/man-pages/man4/veth.4.html
+- https://man7.org/linux/man-pages/man8/ip-link.8.html
 - https://www.cisco.com/c/en/us/support/docs/ip/ip-multicast/9356-48.html
 
 # Authors
