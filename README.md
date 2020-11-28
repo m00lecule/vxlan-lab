@@ -251,18 +251,14 @@ Po konfiguracji VXLANu najprawdopodobniej wystąpi konieczneść restartu usług
 Podczas komunikacji pomiędzy pierwszym i drugim komputerem zaobserwuj co się dzieje na linku pomiędzy routerem a trzecim komputerem.
 Ponieważ stosujemy zalewanie cała komunikacja jest wysyłana również do trzeciego hosta.
 
-Spróbuj naprawić ten problem korzystając z komendy `bridge fdb append` w taki sposób aby VTEP wiedział pod którym IP underlayowym znajduje się drugi VTEP o wskazanym adresie MAC.
-
-Aby usunąć wpis powodujący zalewanie użyj `bridge fdb del`.
-
-W jaki sposób można poprawić skalowalność tego rozwiązania?
+Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu VTEPa. Sprawdź jak zmienia się zawartość tablic fdb na hostach(polecenie `bridge fdb`):
+- Przed rozpoczęciem jakiejkolwiek komunikacji _powinny być tylko wpisy 00:00:00:00:00:00_
+- Po spingowaniu drugiego hosta z pierwszego hosta - _wszystkie trzy hosty powinny znać MACa pierwszego hosta(bo ARP)_
+- Po spingowaniu pierwszego hosta z drugiego hosta - _tutaj nie zachodzi ARP, trzeci host nie powinien dostać wpisu o drugim hoście_
 
 # Problem 3
-Wyczyść stworzoną overlayową konfigurację, na przykład poprzez zrestartowanie wirtualnych maszyn.
-Przed rozpoczęciem upewnij się, że underlay działa prawidłowo.
-
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
-Dla uproszczenia można zignorować tworzenie namespaców.
+Przy tworzeniu VTEPa użwyj opcji `group <adres grupy MC>`.
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
