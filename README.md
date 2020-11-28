@@ -11,6 +11,8 @@ VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [R
 
 Na systemach UNIXowych lista interfejsów jest dostępna w katalogu `/sys/class/net/`.
 
+**Uwaga:** Wszystkie podane w tej sekcji komendy wymagają posiadania uprawnień administratora.
+
 Konfiguracja interfejsu logicznego w systemach UNIXowych jest możliwa za pomocą polecenia `ifconfig`:
 ```
 ifconfig nazwa_interfejsu_fizycznego[:numer_interfejsu_logicznego] adres_IP netmask maska
@@ -30,8 +32,6 @@ Przykład:
 ```
 ifconfig wlp3s0:12 down
 ```
-
-*Opracowano na podstawie: https://www.cs.put.poznan.pl/mlibuda/konf_Linux.pdf*
 
 ### Bridge
 
@@ -71,9 +71,61 @@ Bridge usuwany jest z systemu za pomocą polecenia:
 ip link delete nazwa_bridge'a type bridge
 ```
 
-*Opracowano na podstawie: https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/, https://wiki.archlinux.org/index.php/Network_bridge*
-
 ### VEth
+
+VEth jest wirtualnym łączem Ethernet, tworzy się odpowiednie pary wirtualnych urządzeń stanowiące końce połączenia. Pakiety, które zostały wysłane przez jeden z końców automatycznie przychodza na drugi z nich.
+
+Łącze VEth tworzy się za pomocą komendy:
+```
+ip link add nazwa1 type veth peer name nazwa2
+```
+
+Inną możliwością, jest utworzenie przestrzeni nazw do których przypisane zostaną odpowiednie końce połączenia, wymaga to modyfikacji komend:
+```
+ip netns add przestrzen1
+ip netns add przestrzen2
+ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
+```
+
+**Uwaga:** przy zadeklarowaniu przestrzeni nazw i przypisaniu do niej interfejsu aby wykonać polecenia w tej przestrzeni należy komendy poprzedzić (przedstawione w przykładzie dalej):
+```
+ip netns exec nazwa_przestrzeni komenda_do_wykonania
+```
+
+Przykładowe połączenie z użyciem bridge'a przedstawia poniższy rysunek:
+
+![](img/veth.png)
+
+*źródło grafiki: https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/*
+
+
+Po przypisaniu adresów IP do interfejsów można zweryfikować działanie połączenia za pomocą pinga, przykład konfiguracji:
+```
+ip netns add przestrzen1
+ip netns add przestrzen2
+
+ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
+
+ip netns exec przestrzen1 ip link set dev veth1 up
+ip netns exec przestrzen2 ip link set dev veth2 up
+
+ip netns exec przestrzen1 ip addr add 10.0.0.1/24 dev veth1
+ip netns exec przestrzen2 ip addr add 10.0.0.2/24 dev veth2
+
+ip netns exec przestrzen1 ping -I veth1 10.0.0.2
+ip netns exec przestrzen2 ping -I veth2 10.0.0.1
+```
+
+Interfejsy VEth można usuwać za pomocą `ip link delete` (wystarczy usunąć tylko jeden koniec, drugi zostanie usunięty automatycznie, dla przestrzeni nazw trzeba komendę oczywiście poprzedzić `ip netns exec nazwa_przestrzeni`):
+```
+ip link delete veth1
+```
+
+Przestrzeń nazw usuwamy analogicznie, używając `ip netns delete`:
+```
+ip netns delete przestrzen1
+ip netns delete przestrzen2
+```
 
 ## Zasada działania
 
@@ -310,6 +362,13 @@ Dla uproszczenia można zignorować tworzenie namespaców.
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
+
+# Źródła
+
+- https://www.cs.put.poznan.pl/mlibuda/konf_Linux.pdf
+- https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking/
+- https://wiki.archlinux.org/index.php/Network_bridge
+- https://man7.org/linux/man-pages/man4/veth.4.html
 
 # Authors
 
