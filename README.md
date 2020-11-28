@@ -9,7 +9,7 @@ Linux udostępnia wiele różnych interfejsów sieciowych:
 - Wirtualne - realizują pewną funkcjonalność, ale nie korzystają bezpośrednio ze sprzętu. Do tej grupy zaliczamy mosty, pary veth, interfejsty tun/tap, itd.
 
 Wraz z rozwojem wirutalizacji wzrosło znaczenie interfejsów wirtualnych. 
-W tym laboratorium będziemy symulować topologię, która jest zwykle tworzona przez Dockera(najczęściej stosowane narzędzie do konteneryzacji).
+W tym laboratorium będziemy symulować topologię, która jest zwykle tworzona przez Dockera (najczęściej stosowane narzędzie do konteneryzacji).
 Będzie ona wykorzystywała bridge, parę veth oraz interfejs VTEP.
 
 ### Most (Bridge)
@@ -230,7 +230,7 @@ _(Powinniśmy zobaczyć arpy, na które nikt nie odpowiada)_
 
 W tym celu należy statycznie uzupełnić adresy MAC:
 
-Wstępnie spróbujmy uzupełnić jakiś fałszywy adres MAC, aby sprawdzić czy interfejs vxlan odpowie na ARP'a w imieniu remote. Opcja `proxy`, przy tworzeniu interfejsu vxlanowego odpowiada za skonfigurowanie tej funkcjonalności.
+Wstępnie spróbujmy uzupełnić jakiś fałszywy adres MAC, aby sprawdzić czy interfejs vxlan odpowie na ARP'a w imieniu remote. Opcja `proxy` przy tworzeniu interfejsu vxlanowego odpowiada za skonfigurowanie tej funkcjonalności.
 
 ```sh
 ip n add 172.25.165.2 lladdr 00:01:02:03:04:05 dev vxlan0
@@ -302,7 +302,7 @@ ip netns exec vxlan nc -vvt <adres drugiego komputera> 9999
 Powinniśmy otrzymać shell na drugim komputerze:
 ![](img/3.png)
 
-Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych(output komendy `ip a`):
+Analiza pakietów w Wiresharku pozwala na oględziny przesłanych danych (output komendy `ip a`):
 ![](img/4.png)
 
 **W tym momencie zrób problem 1**
