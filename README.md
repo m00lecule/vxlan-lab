@@ -5,7 +5,7 @@ VxLAN (Virtual Extensible LAN) jest standardem wirtualizacji sieci opisanym w [R
 ## Interfejsy sieciowe w Linuxie
 
 Linux udostępnia wiele różnych interfejsów sieciowych:
-- Fizyczne (*ethX*, *ensXX*, *wlanX*, itp.) - reprezentują fizyczny interfejs urządzenia, rozmawiają bezpośrednio ze sterownikami urządzeń.
+- Fizyczne (*ethX*, *ensXX*, *wlanX*, itp.) - reprezentują fizyczny interfejs urządzenia, korzystają bezpośrednio ze sprzętu.
 - Wirtualne - realizują pewną funkcjonalność, ale nie korzystają bezpośrednio ze sprzętu. Do tej grupy zaliczamy mosty, pary veth, interfejsty tun/tap, itd.
 
 Wraz z rozwojem wirutalizacji wzrosło znaczenie interfejsów wirtualnych. 
