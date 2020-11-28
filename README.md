@@ -257,7 +257,7 @@ Spróbuj naprawić ten problem wykorzystując opcję `learning` przy tworzeniu V
 - Po spingowaniu pierwszego hosta z drugiego hosta - _tutaj nie zachodzi ARP, trzeci host nie powinien dostać wpisu o drugim hoście_
 
 **Uwaga**
-Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `net.ipv6.conf.all.disable_ipv6 = 1`.
+Powinniśmy wyłączyć IPv6, aby host nie próbował wysyłać ramek używanych przy autokonfiguracji `sysctl -w net.ipv6.conf.all.disable_ipv6 = 1`.
 Na potrzeby tego zadania należy również wyłączyć wszystkie usługi, które mogą próbować automatycznie wysłać coś po włączeniu interfejsu.
 Przykładem takiej usługi może być *avahi-deamon*.
 
