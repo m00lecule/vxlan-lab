@@ -450,7 +450,18 @@ Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośr
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
-Przy tworzeniu VTEPa użwyj opcji `group <adres grupy MC>`.
+
+```sh
+ip l add vxlan0 type vxlan id 88 dstport 4789 group 239.1.1.1 dev eth0
+ip a add 172.25.165.1/24 dev vxlan0
+ip l set up vxlan0
+```
+
+Opcja `group <..>` określa grupę multicastową, której użyjemy do wysyłania ramek. 
+Opcja `dev <..>` określa przez, który interfejs dołączymy za pomocą IGMP do grupy multicastowej.
+
+Po postawieniu interfejsu możemy zauważych ruch IGMP.
+![](img/9.png)
 
 Jakie zalety oferuje ta metoda w porównaniu do wcześniej opisanych?
 Dlaczego nie możemy zastosować tej metody w Internecie?
