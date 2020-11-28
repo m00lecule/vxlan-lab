@@ -316,7 +316,9 @@ Host 3:
 00:00:00:00:00:00 dst 2.2.2.2 self permanent
 ```
 
-Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
+Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. 
+Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
+Mimo, że w teorii mogłoby powiązać overlayowy adres MAC *4e:00:84:8e:77:8a* z underlayowym IP *1.1.1.2*.
 ![](img/8.png)
 
 **Po spingowaniu hosta 1 przez 2:**
