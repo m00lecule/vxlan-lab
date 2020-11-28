@@ -288,7 +288,7 @@ bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
 ```
 
-Oczekiwane wpisy przed rozpoczęciem komunikacji:
+**Oczekiwane wpisy przed rozpoczęciem komunikacji:**
 ```
 Host 1:
 00:00:00:00:00:00 dst 2.2.2.2 self permanent
@@ -301,7 +301,7 @@ Host 3:
 00:00:00:00:00:00 dst 2.2.2.2 self permanent
 ```
 
-Po spingowaniu hosta 2 przez 1:
+**Po spingowaniu hosta 2 przez 1:**
 ```
 Host 1:
 00:00:00:00:00:00 dst 2.2.2.2 self permanent
@@ -318,6 +318,9 @@ Host 3:
 
 Host 3 nie dostał wpisu z adresem Hosta 1, mimo że otrzymał broadcast z ARPem. Wygląda na to, że w tym przypadku jądro Linuxa nie dodaje wpisu.
 ![](img/8.png)
+
+**Po spingowaniu hosta 1 przez 2:**
+Sytacja bez zmian.
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
