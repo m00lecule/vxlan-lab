@@ -446,7 +446,7 @@ Host 3 otrzymał ARPa wysłanego prez Hosta 1, dlatego otrzymał wpis z jego adr
 ![](img/8.png)
 
 **Po spingowaniu hosta 1 przez 2:**
-Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośrednio do Hosta1.
+Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośrednio do Hosta 1.
 
 # Problem 3
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
