@@ -19,19 +19,19 @@ System Linux udostępnia wiele możliwości tworzenia wirtualnych sieci działaj
 Przykładowo: na komputerze mamy dostępne 3 wirtualne środowiska, które chcemy połączyć ze sobą oraz z zewnętrzną siecią (dostępną na interfejsie eth0). Tworzymy bridge oraz dołączmy do niego urządzenia za pomocą następujących komend:
 
 ```
-ip l add br0 type bridge
-ip l set br0 up
+ip link add br0 type bridge
+ip link set br0 up
 
-ip l set eth0 master br0
+ip link set eth0 master br0
 
-ip l set tap1 up
-ip l set tap1 master br0
+ip link set tap1 up
+ip link set tap1 master br0
 
-ip l set tap2 up
-ip l set tap2 master br0
+ip link set tap2 up
+ip link set tap2 master br0
 
-ip l set veth1 up
-ip l set veth1 master br0
+ip link set veth1 up
+ip link set veth1 master br0
 ```
 
 W rezultacie otrzymujemy połączenie przedstawione na poniższym schemacie:
@@ -42,12 +42,12 @@ W rezultacie otrzymujemy połączenie przedstawione na poniższym schemacie:
 
 Do odłączenia interfejsów od bridge'a służy polecenie:
 ```
-ip l set nazwa_interfejsu nomaster
+ip link set nazwa_interfejsu nomaster
 ```
 
 Bridge usuwany jest z systemu za pomocą polecenia:
 ```
-ip l del nazwa_bridge'a
+ip link delete nazwa_bridge'a
 ```
 
 ### VEth (Virtual Ethernet)
@@ -56,14 +56,14 @@ VEth jest wirtualnym łączem Ethernet, tworzy się odpowiednie pary wirtualnych
 
 Łącze VEth tworzy się za pomocą komendy:
 ```
-ip l add nazwa1 type veth peer name nazwa2
+ip link add nazwa1 type veth peer name nazwa2
 ```
 
 Inną możliwością, jest utworzenie przestrzeni nazw do których przypisane zostaną odpowiednie końce połączenia, wymaga to modyfikacji komend:
 ```
 ip netns add przestrzen1
 ip netns add przestrzen2
-ip l add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
+ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
 ```
 
 **Uwaga:** przy zadeklarowaniu przestrzeni nazw i przypisaniu do niej interfejsu aby wykonać polecenia w tej przestrzeni należy komendy poprzedzić (przedstawione w przykładzie dalej):
@@ -85,11 +85,11 @@ ip netns add przestrzen2
 
 ip link add veth1 netns przestrzen1 type veth peer name veth2 netns przestrzen2
 
-ip netns exec przestrzen1 ip l set dev veth1 up
-ip netns exec przestrzen2 ip l set dev veth2 up
+ip netns exec przestrzen1 ip link set dev veth1 up
+ip netns exec przestrzen2 ip link set dev veth2 up
 
-ip netns exec przestrzen1 ip a add 10.0.0.1/24 dev veth1
-ip netns exec przestrzen2 ip a add 10.0.0.2/24 dev veth2
+ip netns exec przestrzen1 ip address add 10.0.0.1/24 dev veth1
+ip netns exec przestrzen2 ip address add 10.0.0.2/24 dev veth2
 
 ip netns exec przestrzen1 ping -I veth1 10.0.0.2
 ip netns exec przestrzen2 ping -I veth2 10.0.0.1
@@ -97,7 +97,7 @@ ip netns exec przestrzen2 ping -I veth2 10.0.0.1
 
 Interfejsy VEth można usuwać za pomocą `ip l delete` (wystarczy usunąć tylko jeden koniec, drugi zostanie usunięty automatycznie, dla przestrzeni nazw trzeba komendę oczywiście poprzedzić `ip netns exec nazwa_przestrzeni`):
 ```
-ip l delete veth1
+ip link delete veth1
 ```
 
 Przestrzeń nazw usuwamy analogicznie, używając `ip netns delete`:
@@ -164,13 +164,13 @@ Na każdym hoście:
 
 ```sh
 # dodawanie IP na interfejsie eth0
-ip a add <ip_addr> dev <interface>
+ip address add <ip_addr> dev <interface>
 
 # dodawanie domyślnej bramy:
-ip r add 0.0.0.0/0 via <ip_gateway>
+ip route add 0.0.0.0/0 via <ip_gateway>
 
 # podnoszenie interfejsu:
-ip l set up dev vxlan0
+ip link set up dev vxlan0
 ```
 
 ## Konfiguracja VXLAN
@@ -180,7 +180,7 @@ Opcja `proxy` powoduje, że VTEP odpowiada na ARPy używając własnej tablicy A
 Opcja `nolearning` wyłącza source-address learning, który pozwala na skojarzenie overlayowego adresu MAC z underlayowym adresem IP.
 Powyższe opcje wymuszą na nas konfigurację wielu rzeczy ręcznie, ale pozwolą na lepsze zrozumienie tego co się dzieje.
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
+ip link add vxlan0 type vxlan id 88 dstport 4789 proxy nolearning
 ```
 
 ## Tworzymy namespace
@@ -198,7 +198,7 @@ ip netns add vxlan
 Tworzymy interfejs VETH **(opis dodać)** połączenia namespace'a z domyślnym namespacem:
 
 ```sh
-ip l add veth0 type veth peer veth1 netns vxlan
+ip link add veth0 type veth peer veth1 netns vxlan
 ```
 
 **Zadanie** Sprawdź interfejsy sieciowe w utworzonym ns.
@@ -210,14 +210,14 @@ ip l add veth0 type veth peer veth1 netns vxlan
 Komunikacje wychodzącą z NS mamy już przygotowaną, należy teraz skonfigurować połączenie z interfejsem vxlanowym, który będzie odpowiadał za tunelowanie ruchu sieciowego.
 
 ```sh
-ip l add <br_int_name> type bridge
+ip link add <br_int_name> type bridge
 
 # Podpinamy interfejsy sieciowe pod bridge'a
-ip l set master <br_int_name> dev veth1
-ip l set master <br_int_name> dev vxlan0
+ip link set master <br_int_name> dev veth1
+ip link set master <br_int_name> dev vxlan0
 
 #Podnosimy brigde'a
-ip l set up dev <br_int_name>
+ip link set up dev <br_int_name>
 ```
 
 **Zadanie** Spróbuj spingować adres z sieci, który fizycznie znajduje się zza routerem. Do debugowania użyj komendy:
@@ -233,7 +233,7 @@ W tym celu należy statycznie uzupełnić adresy MAC:
 Wstępnie spróbujmy uzupełnić jakiś fałszywy adres MAC, aby sprawdzić czy interfejs vxlan odpowie na ARP'a w imieniu remote. Opcja `proxy` przy tworzeniu interfejsu vxlanowego odpowiada za skonfigurowanie tej funkcjonalności.
 
 ```sh
-ip n add 172.25.165.2 lladdr 00:01:02:03:04:05 dev vxlan0
+ip neighbour add 172.25.165.2 lladdr 00:01:02:03:04:05 dev vxlan0
 ```
 
 Czy host dostał odpowiedź na pinga?
@@ -312,7 +312,7 @@ Jak zrobić aby nie trzeba było ręcznie wpisywać MACów, tylko żeby całoś�
 
 Tworzymy VTEP używając następujących opcji:
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy nolearning
+ip link add vxlan0 type vxlan id 88 dstport 4789 noproxy nolearning
 ```
 Jedyną różnicą jest opcja `noproxy` - teraz VTEP będzie przekazywał ramki ARPowe dalej, zamiast samemu na nie odpowiadać.
 
@@ -366,27 +366,27 @@ Przykładem takiej usługi może być *avahi-deamon*.
 
 Konfiguracja na hoście 1 (_1.1.1.2_):
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
-ip a add 172.25.165.1/24 dev vxlan0
-ip l set up vxlan0
+ip link add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip address add 172.25.165.1/24 dev vxlan0
+ip link set up vxlan0
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
 ```
 
 Konfiguracja na hoście 2 (_2.2.2.2_):
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
-ip a add 172.25.165.2/24 dev vxlan0
-ip l set up vxlan0
+ip link add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip address add 172.25.165.2/24 dev vxlan0
+ip link set up vxlan0
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 3.3.3.2
 ```
 
 Konfiguracja na hoście 3 (_3.3.3.2_):
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
-ip a add 172.25.165.3/24 dev vxlan0
-ip l set up vxlan0
+ip link add vxlan0 type vxlan id 88 dstport 4789 noproxy learning
+ip address add 172.25.165.3/24 dev vxlan0
+ip link set up vxlan0
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 1.1.1.2
 bridge fdb append 00:00:00:00:00:00 dev vxlan0 dst 2.2.2.2
 ```
@@ -430,9 +430,9 @@ Sytuacja bez zmian. Host 2 nie broadcastował ramki, tylko wysłał ją bezpośr
 Spróbuj skonfigurować VXLAN używając metody z multicastem. 
 
 ```sh
-ip l add vxlan0 type vxlan id 88 dstport 4789 group 224.4.4.4 dev eth0
-ip a add 172.25.165.1/24 dev vxlan0
-ip l set up vxlan0
+ip link add vxlan0 type vxlan id 88 dstport 4789 group 224.4.4.4 dev eth0
+ip address add 172.25.165.1/24 dev vxlan0
+ip link set up vxlan0
 ```
 
 Opcja `group <..>` określa grupę multicastową, której użyjemy do wysyłania ramek. 
@@ -449,7 +449,7 @@ Router nie routuje multicastowych pakietów, musimy go skonfigurować:
 ```sh
 ip multicast-routing 
 
-int fa0/0 
+interface fa0/0 
 ip pim sparse-dense-mode 
 
 ...
